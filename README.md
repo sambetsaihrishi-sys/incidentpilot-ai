@@ -48,3 +48,7 @@ Future Incidents Get Better Recommendations
 ## System Architecture
 
 ![IncidentPilot AI System Architecture](architecture/incidentpilot-architecture.png)
+
+Live frontend: https://incidentpilot-ai-sigma.vercel.app
+Backend: https://incidentpilot-ai-backend.onrender.com
+API docs: https://incidentpilot-ai-backend.onrender.com/docs
