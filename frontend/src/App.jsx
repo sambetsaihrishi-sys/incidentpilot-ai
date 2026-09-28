@@ -66,41 +66,48 @@ function App() {
     }
   };
 
-  const resolveIncident = async () => {
-    if (!result?.incident_id) return;
+const resolveIncident = async () => {
+  if (!result?.incident_id) return;
 
-    try {
-      const response = await fetch(
-        `${API_URL}/incidents/${result.incident_id}/resolve`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...resolution,
-            resolution_time_minutes: Number(
-              resolution.resolution_time_minutes
-            ),
-          }),
-        }
-      );
+  try {
+    const response = await fetch(
+      `${API_URL}/incidents/${result.incident_id}/resolve`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...resolution,
+          resolution_time_minutes: Number(
+            resolution.resolution_time_minutes
+          ),
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Failed to resolve incident");
+          // Fallback incident data for Render/stateless deployment
+          service: form.service,
+          status_code: Number(form.status_code),
+          error_message: form.error_message,
+          endpoint: form.endpoint,
+          severity: form.severity,
+        }),
       }
+    );
 
-      setResolveMessage(
-        data.memory_saved
-          ? "Incident resolved and learned by Hindsight ✓"
-          : "Incident resolved, but memory could not be stored."
-      );
-    } catch (error) {
-      alert(error.message);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || "Failed to resolve incident");
     }
-  };
+
+    setResolveMessage(
+      data.memory_saved
+        ? "Incident resolved and learned by Hindsight ✓"
+        : "Incident resolved, but memory could not be stored."
+    );
+  } catch (error) {
+    alert(error.message);
+  }
+};
 
   return (
     <div className="app">

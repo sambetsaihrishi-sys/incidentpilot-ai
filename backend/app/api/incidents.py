@@ -62,19 +62,38 @@ async def resolve_incident(
         Incident.id == incident_id
     ).first()
 
-    if not incident:
-        raise HTTPException(
-            status_code=404,
-            detail="Incident not found"
-        )
+    # Use DB record when available.
+    # Fall back to incident details sent by the frontend on stateless deployments.
+    if incident:
+        service = incident.service
+        status_code = incident.status_code
+        error_message = incident.error_message
+        endpoint = incident.endpoint
+        severity = incident.severity
+    else:
+        if (
+            not resolution_data.service
+            or resolution_data.status_code is None
+            or not resolution_data.error_message
+        ):
+            raise HTTPException(
+                status_code=404,
+                detail="Incident not found and fallback incident data is missing"
+            )
+
+        service = resolution_data.service
+        status_code = resolution_data.status_code
+        error_message = resolution_data.error_message
+        endpoint = resolution_data.endpoint
+        severity = resolution_data.severity
 
     memory_saved = await retain_resolved_incident(
-        incident_id=incident.id,
-        service=incident.service,
-        status_code=incident.status_code,
-        error_message=incident.error_message,
-        endpoint=incident.endpoint,
-        severity=incident.severity,
+        incident_id=incident_id,
+        service=service,
+        status_code=status_code,
+        error_message=error_message,
+        endpoint=endpoint,
+        severity=severity,
         root_cause=resolution_data.root_cause,
         resolution=resolution_data.resolution,
         resolution_time_minutes=resolution_data.resolution_time_minutes
@@ -82,10 +101,9 @@ async def resolve_incident(
 
     return {
         "message": "Incident resolved successfully",
-        "incident_id": incident.id,
+        "incident_id": incident_id,
         "memory_saved": memory_saved
     }
-
 
 @router.get("/")
 def get_incidents(db: Session = Depends(get_db)):

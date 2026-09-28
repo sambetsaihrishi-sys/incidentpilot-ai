@@ -10,8 +10,13 @@ class IncidentCreate(BaseModel):
     response_time_ms: Optional[int] = None
     severity: Optional[str] = None
 
-
 class IncidentResolution(BaseModel):
     root_cause: str
     resolution: str
     resolution_time_minutes: int
+
+    service: Optional[str] = None
+    status_code: Optional[int] = None
+    error_message: Optional[str] = None
+    endpoint: Optional[str] = None
+    severity: Optional[str] = None
